@@ -20,6 +20,7 @@ extern "C" {
 #include <functional>
 #include <string>
 #include <vector>
+#include <chrono>
 
 const char* readFromFile(const char* path) {
     FILE* file = fopen(path, "r");
@@ -144,8 +145,28 @@ int main(int argc, char* argv[]) {
     printf("%s\n", xpath);
     xmlXPathCompExprPtr comp = xmlXPathCompile(BAD_CAST xpath);
     xmlXPathDebugDumpCompExpr(stdout, comp, 0);
-    xmlXPathObjectPtr res = xmlXPathCompiledEval(comp, ctxt);
+    xmlXPathObjectPtr res;
+    std::vector<uint64_t> times_a;
+    std::vector<uint64_t> times_b;
+    for (int i=0; i<10; ++i) {
+        uint64_t beginTimeUs = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        res = xmlXPathCompiledEval(comp, ctxt);
+        uint64_t endTimeUs = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        times_a.push_back(endTimeUs - beginTimeUs);
+    }
     xmlXPathDebugDumpObject(stdout, res, 0);
-    instanceOptimalXPathEval(comp, ctxt);
+    for (int i=0; i<10; ++i) {
+        uint64_t beginTimeUs = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        instanceOptimalXPathEval(comp, ctxt);
+        uint64_t endTimeUs = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        times_b.push_back(endTimeUs - beginTimeUs);
+    }
+    // show times_a and times_b
+    for (int i=0; i<10; ++i) {
+        printf("times_a[%d]: %lu\n", i, times_a[i]);
+    }
+    for (int i=0; i<10; ++i) {
+        printf("times_b[%d]: %lu\n", i, times_b[i]);
+    }
     return 0;
 }
