@@ -1505,9 +1505,9 @@ static void
 xmlXPathDebugDumpStepOp(FILE *output, xmlXPathCompExprPtr comp,
 	                     xmlXPathStepOpPtr op, int depth) {
     int i;
-    char shift[100];
+    char shift[10000];
 
-    for (i = 0;((i < depth) && (i < 25));i++)
+    for (i = 0;((i < depth) && (i < 100));i++)
         shift[2 * i] = shift[2 * i + 1] = ' ';
     shift[2 * i] = shift[2 * i + 1] = 0;
 
@@ -12956,6 +12956,7 @@ xmlXPathCompOpEvalFilterFirst(xmlXPathParserContextPtr ctxt,
 static int
 xmlXPathCompOpEval(xmlXPathParserContextPtr ctxt, xmlXPathStepOpPtr op)
 {
+	printf("%s:%d\n", __func__, __LINE__);
     int total = 0;
     int equal, ret;
     xmlXPathCompExprPtr comp;
@@ -12970,8 +12971,10 @@ xmlXPathCompOpEval(xmlXPathParserContextPtr ctxt, xmlXPathStepOpPtr op)
     comp = ctxt->comp;
     switch (op->op) {
         case XPATH_OP_END:
+			printf("%s:%d: XPATH_OP_END\n", __func__, __LINE__);
             break;
         case XPATH_OP_AND:
+			printf("%s:%d: XPATH_OP_AND\n", __func__, __LINE__);
             total += xmlXPathCompOpEval(ctxt, &comp->steps[op->ch1]);
 	    CHECK_ERROR0;
             xmlXPathBooleanFunction(ctxt, 1);
@@ -12989,6 +12992,7 @@ xmlXPathCompOpEval(xmlXPathParserContextPtr ctxt, xmlXPathStepOpPtr op)
 	    xmlXPathReleaseObject(ctxt->context, arg2);
             break;
         case XPATH_OP_OR:
+			printf("%s:%d: XPATH_OP_OR\n", __func__, __LINE__);
             total += xmlXPathCompOpEval(ctxt, &comp->steps[op->ch1]);
 	    CHECK_ERROR0;
             xmlXPathBooleanFunction(ctxt, 1);
@@ -13006,6 +13010,7 @@ xmlXPathCompOpEval(xmlXPathParserContextPtr ctxt, xmlXPathStepOpPtr op)
 	    xmlXPathReleaseObject(ctxt->context, arg2);
             break;
         case XPATH_OP_EQUAL:
+			printf("%s:%d: XPATH_OP_EQUAL\n", __func__, __LINE__);
             total += xmlXPathCompOpEval(ctxt, &comp->steps[op->ch1]);
 	    CHECK_ERROR0;
             total += xmlXPathCompOpEval(ctxt, &comp->steps[op->ch2]);
@@ -13017,6 +13022,7 @@ xmlXPathCompOpEval(xmlXPathParserContextPtr ctxt, xmlXPathStepOpPtr op)
 	    valuePush(ctxt, xmlXPathCacheNewBoolean(ctxt->context, equal));
             break;
         case XPATH_OP_CMP:
+			printf("%s:%d: XPATH_OP_CMP\n", __func__, __LINE__);
             total += xmlXPathCompOpEval(ctxt, &comp->steps[op->ch1]);
 	    CHECK_ERROR0;
             total += xmlXPathCompOpEval(ctxt, &comp->steps[op->ch2]);
@@ -13025,6 +13031,7 @@ xmlXPathCompOpEval(xmlXPathParserContextPtr ctxt, xmlXPathStepOpPtr op)
 	    valuePush(ctxt, xmlXPathCacheNewBoolean(ctxt->context, ret));
             break;
         case XPATH_OP_PLUS:
+			printf("%s:%d: XPATH_OP_PLUS\n", __func__, __LINE__);
             total += xmlXPathCompOpEval(ctxt, &comp->steps[op->ch1]);
 	    CHECK_ERROR0;
             if (op->ch2 != -1) {
@@ -13043,6 +13050,7 @@ xmlXPathCompOpEval(xmlXPathParserContextPtr ctxt, xmlXPathStepOpPtr op)
             }
             break;
         case XPATH_OP_MULT:
+			printf("%s:%d: XPATH_OP_MULT\n", __func__, __LINE__);
             total += xmlXPathCompOpEval(ctxt, &comp->steps[op->ch1]);
 	    CHECK_ERROR0;
             total += xmlXPathCompOpEval(ctxt, &comp->steps[op->ch2]);
@@ -13055,6 +13063,7 @@ xmlXPathCompOpEval(xmlXPathParserContextPtr ctxt, xmlXPathStepOpPtr op)
                 xmlXPathModValues(ctxt);
             break;
         case XPATH_OP_UNION:
+			printf("%s:%d: XPATH_OP_UNION\n", __func__, __LINE__);
             total += xmlXPathCompOpEval(ctxt, &comp->steps[op->ch1]);
 	    CHECK_ERROR0;
             total += xmlXPathCompOpEval(ctxt, &comp->steps[op->ch2]);
@@ -13093,9 +13102,11 @@ xmlXPathCompOpEval(xmlXPathParserContextPtr ctxt, xmlXPathStepOpPtr op)
 	    xmlXPathReleaseObject(ctxt->context, arg2);
             break;
         case XPATH_OP_ROOT:
+			printf("%s:%d: XPATH_OP_ROOT\n", __func__, __LINE__);
             xmlXPathRoot(ctxt);
             break;
         case XPATH_OP_NODE:
+			printf("%s:%d: XPATH_OP_NODE\n", __func__, __LINE__);
             if (op->ch1 != -1)
                 total += xmlXPathCompOpEval(ctxt, &comp->steps[op->ch1]);
 	    CHECK_ERROR0;
@@ -13106,6 +13117,7 @@ xmlXPathCompOpEval(xmlXPathParserContextPtr ctxt, xmlXPathStepOpPtr op)
 		ctxt->context->node));
             break;
         case XPATH_OP_COLLECT:{
+				printf("%s:%d: XPATH_OP_COLLECT\n", __func__, __LINE__);
                 if (op->ch1 == -1)
                     break;
 
@@ -13116,11 +13128,13 @@ xmlXPathCompOpEval(xmlXPathParserContextPtr ctxt, xmlXPathStepOpPtr op)
                 break;
             }
         case XPATH_OP_VALUE:
+			printf("%s:%d: XPATH_OP_VALUE\n", __func__, __LINE__);
             valuePush(ctxt,
                       xmlXPathCacheObjectCopy(ctxt->context,
 			(xmlXPathObjectPtr) op->value4));
             break;
         case XPATH_OP_VARIABLE:{
+			printf("%s:%d: XPATH_OP_VALUE\n", __func__, __LINE__);
 		xmlXPathObjectPtr val;
 
                 if (op->ch1 != -1)
@@ -13132,6 +13146,7 @@ xmlXPathCompOpEval(xmlXPathParserContextPtr ctxt, xmlXPathStepOpPtr op)
 			XP_ERROR0(XPATH_UNDEF_VARIABLE_ERROR);
                     valuePush(ctxt, val);
 		} else {
+					
                     const xmlChar *URI;
 
                     URI = xmlXPathNsLookup(ctxt->context, op->value5);
@@ -13151,6 +13166,7 @@ xmlXPathCompOpEval(xmlXPathParserContextPtr ctxt, xmlXPathStepOpPtr op)
                 break;
             }
         case XPATH_OP_FUNCTION:{
+				printf("%s:%d: XPATH_OP_FUNCTION\n", __func__, __LINE__);
                 xmlXPathFunction func;
                 const xmlChar *oldFunc, *oldFuncURI;
 		int i;
@@ -13226,6 +13242,7 @@ xmlXPathCompOpEval(xmlXPathParserContextPtr ctxt, xmlXPathStepOpPtr op)
                 break;
             }
         case XPATH_OP_ARG:
+			printf("%s:%d: XPATH_OP_ARG\n", __func__, __LINE__);
             if (op->ch1 != -1) {
                 total += xmlXPathCompOpEval(ctxt, &comp->steps[op->ch1]);
 	        CHECK_ERROR0;
@@ -13237,6 +13254,7 @@ xmlXPathCompOpEval(xmlXPathParserContextPtr ctxt, xmlXPathStepOpPtr op)
             break;
         case XPATH_OP_PREDICATE:
         case XPATH_OP_FILTER:{
+				printf("%s:%d: XPATH_OP_PREDICATE / XPATH_OP_FILTER\n", __func__, __LINE__);
                 xmlNodeSetPtr set;
 
                 /*
@@ -13359,6 +13377,7 @@ xmlXPathCompOpEval(xmlXPathParserContextPtr ctxt, xmlXPathStepOpPtr op)
                 break;
             }
         case XPATH_OP_SORT:
+			printf("%s:%d: XPATH_OP_SORT\n", __func__, __LINE__);
             if (op->ch1 != -1)
                 total += xmlXPathCompOpEval(ctxt, &comp->steps[op->ch1]);
 	    CHECK_ERROR0;
@@ -13372,6 +13391,7 @@ xmlXPathCompOpEval(xmlXPathParserContextPtr ctxt, xmlXPathStepOpPtr op)
             break;
 #ifdef LIBXML_XPTR_ENABLED
         case XPATH_OP_RANGETO:{
+				printf("%s:%d: XPATH_OP_RANGETO\n", __func__, __LINE__);
                 xmlXPathObjectPtr range;
                 xmlXPathObjectPtr res, obj;
                 xmlXPathObjectPtr tmp;
@@ -13642,6 +13662,7 @@ static int
 xmlXPathRunStreamEval(xmlXPathContextPtr ctxt, xmlPatternPtr comp,
 		      xmlXPathObjectPtr *resultSeq, int toBool)
 {
+	printf("%s:%d\n", __func__, __LINE__);
     int max_depth, min_depth;
     int from_root;
     int ret, depth;
@@ -13879,6 +13900,8 @@ return_1:
 }
 #endif /* XPATH_STREAMING */
 
+#include "signal.h"
+
 /**
  * xmlXPathRunEval:
  * @ctxt:  the XPath parser context with the compiled expression
@@ -13889,6 +13912,7 @@ return_1:
 static int
 xmlXPathRunEval(xmlXPathParserContextPtr ctxt, int toBool)
 {
+	printf("%s:%d\n", __func__, __LINE__);
     xmlXPathCompExprPtr comp;
 
     if ((ctxt == NULL) || (ctxt->comp == NULL))
@@ -14309,6 +14333,7 @@ xmlXPathCompiledEvalInternal(xmlXPathCompExprPtr comp,
 			     xmlXPathObjectPtr *resObjPtr,
 			     int toBool)
 {
+	printf("%s:%d\n", __func__, __LINE__);
     xmlXPathParserContextPtr pctxt;
     xmlXPathObjectPtr resObj;
 #ifndef LIBXML_THREAD_ENABLED
