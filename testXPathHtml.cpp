@@ -125,8 +125,14 @@ xmlXPathObjectPtr instanceOptimalXPathEval(xmlXPathCompExprPtr comp, xmlXPathCon
             }
         }
     });
-    for (xmlNodePtr n : selected) {
-        printf("%s\n", n->name);
+    if (selected.size() > 0) {
+        xmlNodeSetPtr nodeSet = xmlXPathNodeSetCreate(selected[0]);
+        for (int i=1; i<selected.size(); ++i) {
+            xmlXPathNodeSetAdd(nodeSet, selected[i]);
+        }
+        xmlXPathNodeSetSort(nodeSet);
+        xmlXPathObjectPtr res = xmlXPathNewNodeSetList(nodeSet);
+        return res;
     }
     return nullptr;
 }
@@ -155,12 +161,15 @@ int main(int argc, char* argv[]) {
         times_a.push_back(endTimeUs - beginTimeUs);
     }
     xmlXPathDebugDumpObject(stdout, res, 0);
+    printf("=======================\n");
+    res = nullptr;
     for (int i=0; i<10; ++i) {
         uint64_t beginTimeUs = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-        instanceOptimalXPathEval(comp, ctxt);
+        res = instanceOptimalXPathEval(comp, ctxt);
         uint64_t endTimeUs = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
         times_b.push_back(endTimeUs - beginTimeUs);
     }
+    xmlXPathDebugDumpObject(stdout, res, 0);
     // show times_a and times_b
     for (int i=0; i<10; ++i) {
         printf("times_a[%d]: %lu\n", i, times_a[i]);
